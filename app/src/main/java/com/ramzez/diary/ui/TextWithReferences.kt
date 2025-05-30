@@ -1,0 +1,121 @@
+package com.ramzez.diary.ui.components
+
+import androidx.compose.foundation.text.ClickableText
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.*
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.unit.TextUnit
+import androidx.compose.ui.unit.sp
+import com.ramzez.diary.model.ScriptureReference
+
+@Composable
+fun TextWithReferences(
+    text: String,
+    references: Map<String, ScriptureReference>,
+    onClick: (String) -> Unit,
+    fontWeight: FontWeight = FontWeight.Normal,
+    fontSize: TextUnit = 16.sp
+) {
+    val annotatedText = buildAnnotatedString {
+        val regex = Regex("\\[([^\\]]+)]\\(([^)]+)\\)")
+        var lastIndex = 0
+
+        regex.findAll(text).forEach { match ->
+            append(text.substring(lastIndex, match.range.first))
+
+            val label = match.groups[1]?.value ?: ""
+            val id = match.groups[2]?.value ?: ""
+
+            pushStringAnnotation(tag = "REF", annotation = id)
+            withStyle(
+                SpanStyle(
+                    color = Color.Blue,
+                    textDecoration = TextDecoration.Underline,
+                    fontWeight = fontWeight,
+                    fontSize = fontSize
+                )
+            ) {
+                append(label)
+            }
+            pop()
+
+            lastIndex = match.range.last + 1
+        }
+
+        if (lastIndex < text.length) {
+            withStyle(
+                SpanStyle(
+                    fontWeight = fontWeight,
+                    fontSize = fontSize
+                )
+            ) {
+                append(text.substring(lastIndex))
+            }
+        }
+    }
+
+    ClickableText(
+        text = annotatedText,
+        style = TextStyle(fontWeight = fontWeight, fontSize = fontSize),
+        onClick = { offset ->
+            annotatedText
+                .getStringAnnotations("REF", offset, offset)
+                .firstOrNull()
+                ?.let { annotation -> onClick(annotation.item) }
+        }
+    )
+}
+
+
+
+
+//package com.ramzez.diary.ui.components
+//
+//import androidx.compose.material3.Text
+//import androidx.compose.runtime.Composable
+//import androidx.compose.ui.text.*
+//import androidx.compose.ui.text.style.TextDecoration
+//import androidx.compose.ui.Modifier
+//import androidx.compose.foundation.clickable
+//import androidx.compose.foundation.text.BasicText
+//import androidx.compose.ui.graphics.Color
+//import androidx.compose.foundation.text.ClickableText
+//
+//@Composable
+//fun TextWithReferences(
+//    text: String,
+//    references: Map<String, com.ramzez.diary.model.ScriptureReference>,
+//    onClick: (String) -> Unit
+//) {
+//    val annotatedText = buildAnnotatedString {
+//        val regex = Regex("\\[([^\\]]+)]\\(([^)]+)\\)")
+//        var lastIndex = 0
+//
+//        regex.findAll(text).forEach { match ->
+//            append(text.substring(lastIndex, match.range.first))
+//            val label = match.groups[1]?.value ?: ""
+//            val id = match.groups[2]?.value ?: ""
+//            pushStringAnnotation(tag = "REF", annotation = id)
+//            withStyle(SpanStyle(color = Color.Blue, textDecoration = TextDecoration.Underline)) {
+//                append(label)
+//            }
+//            pop()
+//            lastIndex = match.range.last + 1
+//        }
+//        if (lastIndex < text.length) {
+//            append(text.substring(lastIndex))
+//        }
+//    }
+//
+//    ClickableText(
+//        text = annotatedText,
+//        onClick = { offset ->
+//            annotatedText.getStringAnnotations(tag = "REF", start = offset, end = offset)
+//                .firstOrNull()?.let { annotation ->
+//                    onClick(annotation.item)
+//                }
+//        }
+//    )
+//}
