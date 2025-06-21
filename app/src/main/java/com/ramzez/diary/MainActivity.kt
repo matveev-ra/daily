@@ -16,6 +16,8 @@ import android.os.Build
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.ramzez.diary.notifications.QuoteAlarmReceiver
+import com.ramzez.diary.ui.AppNavGraph
+import androidx.navigation.compose.rememberNavController
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -40,10 +42,15 @@ class MainActivity : ComponentActivity() {
             scheduleDailyQuote()
         }
 
-        setContent {
-            DailyScreen()
-        }
+//        setContent {
+//            DailyScreen()
+//        }
 
+        setContent {
+            val navController = rememberNavController()
+            AppNavGraph(navController)
+        }
+            //handleIntent(intent)
     }
 
     override fun onRequestPermissionsResult(
@@ -60,7 +67,16 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
-
+//    private fun handleIntent(intent: Intent?) {
+//        val quoteText = intent?.getStringExtra("quote_text") ?: return
+//
+//        // Покажем диалог с цитатой (можно заменить на прокрутку/экран)
+//        android.app.AlertDialog.Builder(this)
+//            .setTitle("Цитата дня")
+//            .setMessage(quoteText)
+//            .setPositiveButton("OK", null)
+//            .show()
+//    }
 
     private fun scheduleDailyQuote() {
         val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
@@ -74,8 +90,8 @@ class MainActivity : ComponentActivity() {
 
         // Установить на 8:00 утра каждый день
         val calendar = java.util.Calendar.getInstance().apply {
-            set(java.util.Calendar.HOUR_OF_DAY, 17)
-            set(java.util.Calendar.MINUTE, 0)
+            set(java.util.Calendar.HOUR_OF_DAY, 11)
+            set(java.util.Calendar.MINUTE, 19)
             set(java.util.Calendar.SECOND, 0)
             if (before(java.util.Calendar.getInstance())) {
                 add(java.util.Calendar.DAY_OF_MONTH, 1)
