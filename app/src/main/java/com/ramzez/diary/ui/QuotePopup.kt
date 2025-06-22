@@ -12,6 +12,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 
+/**
+ * Всплывающее окно (AlertDialog) для отображения полного текста библейской ссылки.
+ * @param reference Название ссылки (например, "Иоанна 3:16"), отображается в заголовке.
+ * @param text Полный текст стиха, отображается в теле диалога.
+ * @param onDismiss Лямбда-функция, вызываемая при закрытии окна.
+ */
 @Composable
 fun ReferencePopup(reference: String, text: String, onDismiss: () -> Unit) {
     AlertDialog(

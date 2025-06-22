@@ -14,11 +14,18 @@ import java.time.LocalDate
 import java.time.format.TextStyle
 import java.util.Locale
 
+/**
+ * ViewModel для главного экрана ([com.ramzez.diary.ui.DailyScreen]).
+ * Отвечает за загрузку данных о ежедневных записях и управление текущим отображаемым днем.
+ */
 class DailyViewModel(application: Application) : AndroidViewModel(application) {
 
+    // Приватный MutableStateFlow для хранения списка всех записей.
     private val _entries = MutableStateFlow<List<DailyEntry>>(emptyList())
+    // Публичный, только для чтения StateFlow.
     val entries: StateFlow<List<DailyEntry>> = _entries
 
+    // Приватный MutableStateFlow для хранения индекса текущей записи.
     private val _currentIndex = MutableStateFlow(0)
     val currentIndex: StateFlow<Int> = _currentIndex
 
@@ -26,6 +33,10 @@ class DailyViewModel(application: Application) : AndroidViewModel(application) {
         loadEntries()
     }
 
+    /**
+     * Загружает записи из JSON-файла в `assets`, парсит их
+     * и устанавливает текущий индекс на сегодняшний день.
+     */
     private fun loadEntries() {
         viewModelScope.launch {
             val input = getApplication<Application>().assets.open("parsed_epub.json")
@@ -34,7 +45,7 @@ class DailyViewModel(application: Application) : AndroidViewModel(application) {
             val allEntries: List<DailyEntry> = Gson().fromJson(reader, type)
             _entries.value = allEntries
 
-            // Получаем текущую дату через Calendar
+            // Определяем текущую дату, чтобы показать актуальную запись при запуске.
             val calendar = java.util.Calendar.getInstance()
             val day = calendar.get(java.util.Calendar.DAY_OF_MONTH)
             val monthIndex = calendar.get(java.util.Calendar.MONTH) // 0-based
@@ -42,16 +53,22 @@ class DailyViewModel(application: Application) : AndroidViewModel(application) {
 
             val todayFormatted = "$day $monthName"
 
-            // Поиск записи по текущей дате
+            // Поиск записи по текущей дате.
             val index = allEntries.indexOfFirst { it.date.contains(todayFormatted) }
             _currentIndex.value = if (index >= 0) index else 0
         }
     }
 
+    /**
+     * Переключает на предыдущий день, с ограничением до первого элемента.
+     */
     fun goToPreviousDay() {
         _currentIndex.value = (_currentIndex.value - 1).coerceAtLeast(0)
     }
 
+    /**
+     * Переключает на следующий день, с ограничением до последнего элемента.
+     */
     fun goToNextDay() {
         _currentIndex.value = (_currentIndex.value + 1).coerceAtMost(_entries.value.lastIndex)
     }

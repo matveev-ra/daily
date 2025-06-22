@@ -14,6 +14,12 @@ import com.ramzez.diary.viewmodel.SettingsViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
 
+/**
+ * Экран настроек приложения.
+ * Позволяет пользователю изменять время ежедневных уведомлений.
+ * @param onBack Лямбда-функция для навигации назад.
+ * @param viewModel ViewModel, предоставляющая данные о времени и логику сохранения.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(

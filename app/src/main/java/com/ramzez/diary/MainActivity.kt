@@ -19,11 +19,16 @@ import com.ramzez.diary.notifications.QuoteAlarmReceiver
 import com.ramzez.diary.ui.AppNavGraph
 import androidx.navigation.compose.rememberNavController
 
+/**
+ * Главная и единственная Activity в приложении.
+ * Является точкой входа и хостом для Composable-контента.
+ */
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Запрашиваем разрешение на уведомления (Android 13+)
+        // Начиная с Android 13 (TIRAMISU), для показа уведомлений
+        // необходимо запрашивать разрешение у пользователя.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ContextCompat.checkSelfPermission(
                     this,
@@ -35,24 +40,21 @@ class MainActivity : ComponentActivity() {
                     arrayOf(Manifest.permission.POST_NOTIFICATIONS),
                     1001
                 )
-            } else {
-                scheduleDailyQuote()
             }
-        } else {
-            scheduleDailyQuote()
         }
 
-//        setContent {
-//            DailyScreen()
-//        }
+        // Этот код для виджета, он остается
+        WidgetUpdateReceiver.scheduleWidgetUpdate(this)
 
         setContent {
             val navController = rememberNavController()
             AppNavGraph(navController)
         }
-            //handleIntent(intent)
     }
 
+    /**
+     * Обрабатывает результат запроса разрешений.
+     */
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<out String>,
@@ -61,48 +63,11 @@ class MainActivity : ComponentActivity() {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == 1001) {
             if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                scheduleDailyQuote()
+                // Разрешение получено. При следующем запуске будильник установится корректно
+                // через логику в AppNavGraph.
             } else {
                 // Разрешение не получено — уведомления не будут отображаться
             }
         }
-    }
-//    private fun handleIntent(intent: Intent?) {
-//        val quoteText = intent?.getStringExtra("quote_text") ?: return
-//
-//        // Покажем диалог с цитатой (можно заменить на прокрутку/экран)
-//        android.app.AlertDialog.Builder(this)
-//            .setTitle("Цитата дня")
-//            .setMessage(quoteText)
-//            .setPositiveButton("OK", null)
-//            .show()
-//    }
-
-    private fun scheduleDailyQuote() {
-        val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        val intent = Intent(this, QuoteAlarmReceiver::class.java)
-        val pendingIntent = PendingIntent.getBroadcast(
-            this,
-            0,
-            intent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
-
-        // Установить на 8:00 утра каждый день
-        val calendar = java.util.Calendar.getInstance().apply {
-            set(java.util.Calendar.HOUR_OF_DAY, 11)
-            set(java.util.Calendar.MINUTE, 19)
-            set(java.util.Calendar.SECOND, 0)
-            if (before(java.util.Calendar.getInstance())) {
-                add(java.util.Calendar.DAY_OF_MONTH, 1)
-            }
-        }
-
-        alarmManager.setRepeating(
-            AlarmManager.RTC_WAKEUP,
-            calendar.timeInMillis,
-            AlarmManager.INTERVAL_DAY,
-            pendingIntent
-        )
     }
 }
